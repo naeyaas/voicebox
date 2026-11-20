@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex, nofollow">
+<title>kotak suara</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF;
+  --card:#FFFFFF;
+  --mar:#5A1627;
+  --mar-2:#7A2A3E;
+  --muted:#8E6470;
+  --tint:#F7EEF0;
+  --tint-2:#E8D5DA;
+  --line:rgba(90,22,39,.22);
+  --shadow:0 0 16px rgba(0,0,0,.14);
+  --shadow-sm:0 0 10px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--mar);font-family:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.55;text-transform:lowercase;min-height:100vh;min-height:100dvh}
+button,input{font:inherit;color:inherit;text-transform:inherit}
+button{cursor:pointer}
+.app{max-width:440px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom))}
+
+.head{display:flex;justify-content:space-between;align-items:center;margin:8px 2px 24px}
+.head small{display:block;font-size:12px;color:var(--muted);letter-spacing:.3px}
+.head h1{margin:0;font-size:24px;font-weight:600;line-height:1.25}
+.nav-btn{flex:none;width:46px;height:46px;border-radius:50%;background:var(--card);border:1.5px solid var(--mar);color:var(--mar);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;transition:transform .15s,background .2s,color .2s}
+.nav-btn:active{transform:scale(.92)}
+.nav-btn:hover{background:var(--mar);color:#fff}
+
+.list{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1.5px solid var(--mar);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);transition:background .25s}
+.card.open{background:var(--tint)}
+.card-head{width:100%;min-height:70px;display:flex;align-items:center;gap:14px;padding:12px 16px;background:none;border:0;text-align:left}
+.badge{flex:none;width:40px;height:40px;border-radius:50%;background:var(--tint);border:1.5px solid var(--mar);color:var(--mar);display:flex;align-items:center;justify-content:center;transition:background .25s,color .25s}
+.card.open .badge{background:var(--mar);color:#fff}
+.badge svg{width:19px;height:19px}
+.badge .ico-open{display:none}
+.card.open .badge .ico-closed{display:none}
+.card.open .badge .ico-open{display:block}
+.meta{flex:1;min-width:0}
+.mood{display:block;font-size:11.5px;color:var(--muted)}
+.title{display:block;font-size:14.5px;font-weight:600;line-height:1.35}
+.hint{flex:none;font-size:11.5px;color:var(--mar-2);transition:opacity .2s}
+.card.open .hint{opacity:0}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
+.card.open .body,.panel.open{grid-template-rows:1fr}
+.body>div,.panel>div{overflow:hidden;min-height:0}
+
+.player{padding:2px 16px 16px}
+.wave{display:flex;align-items:center;gap:3px;height:48px;margin:6px 0 10px;cursor:pointer;touch-action:none;user-select:none}
+.wave i{flex:1;min-width:2px;border-radius:2px;background:var(--tint-2);transition:background .15s}
+.wave i.on{background:var(--mar)}
+.ctrl{display:flex;align-items:center;gap:12px}
+.play{width:44px;height:44px;border-radius:50%;border:0;background:var(--mar);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.play:active{transform:scale(.92)}
+.play svg{width:19px;height:19px}
+.play .i-pause{display:none}
+.play.playing .i-play{display:none}
+.play.playing .i-pause{display:block}
+.time{font-size:12.5px;color:var(--mar-2);font-variant-numeric:tabular-nums}
+.note{margin:12px 0 0;padding:12px 14px;background:#fff;border:1px solid var(--tint-2);border-radius:12px;font-size:13.5px;white-space:pre-line}
+.err{margin:10px 0 0;font-size:12.5px;color:#a32d2d;text-transform:none}
+
+.sect{margin:30px 2px 12px;font-size:12px;font-weight:400;color:var(--muted);letter-spacing:.3px}
+.chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.chip{min-height:54px;padding:10px 14px;border:1.5px solid var(--mar);border-radius:14px;background:var(--card);color:var(--mar);box-shadow:var(--shadow-sm);font-size:13px;font-weight:500;text-align:left;transition:background .2s,color .2s,transform .12s}
+.chip:active{transform:scale(.97)}
+.chip.active{background:var(--mar);color:#fff}
+.panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease,margin .35s ease;border:1.5px solid transparent;border-radius:16px;margin-top:0}
+.panel.open{margin-top:14px;border-color:var(--mar);background:var(--tint);box-shadow:var(--shadow)}
+.foot{margin:34px 0 0;text-align:center;font-size:12px;color:var(--muted)}
+
+.lhead{margin:8px 2px 20px}
+.letter{position:relative;overflow:hidden;background:var(--card);border:1.5px solid var(--mar);border-radius:18px;box-shadow:var(--shadow);
+  --lh:32px;
+  line-height:var(--lh);
+  padding:var(--lh) 20px var(--lh) 56px;
+  min-height:calc(var(--lh) * 13);
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 26px,var(--line) 26px,var(--line) 27px,transparent 27px,transparent var(--lh))}
+.letter::before{content:"";position:absolute;top:0;bottom:0;left:42px;width:1px;background:var(--line)}
+.letter h2{margin:0 0 var(--lh);font-size:17px;font-weight:600;line-height:var(--lh)}
+.letter p{margin:0 0 var(--lh);font-size:14.5px;line-height:var(--lh);opacity:0;animation:fadeIn .9s ease forwards}
+.letter .sign{margin:var(--lh) 0 0;color:var(--mar-2);font-weight:500}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+.gate[hidden]{display:none}
+.gate-box{width:100%;max-width:340px;text-align:center}
+.gate-box .big{font-size:44px;line-height:1;margin-bottom:14px}
+.gate-box h2{margin:0 0 6px;font-size:20px;font-weight:600}
+.gate-box p{margin:0 0 20px;color:var(--muted);font-size:14px}
+.gate input{width:100%;height:52px;border:1.5px solid var(--mar);border-radius:14px;background:#fff;box-shadow:var(--shadow-sm);text-align:center;font-size:22px;letter-spacing:8px;color:var(--mar);outline:none}
+.gate input:focus{box-shadow:0 0 0 3px var(--tint-2),var(--shadow-sm)}
+.gate button{margin-top:14px;width:100%;height:50px;border:0;border-radius:14px;background:var(--mar);color:#fff;font-weight:600;font-size:15px}
+.gate .msg{min-height:22px;margin-top:12px;font-size:13px;color:#a32d2d}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+button:focus-visible,.wave:focus-visible{outline:3px solid var(--tint-2);outline-offset:2px}
+@media (min-width:600px){.app{padding-top:48px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.letter p{opacity:1!important}}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate" hidden>
+  <form class="gate-box" id="gateForm" autocomplete="off">
+    <div class="big">🎧</div>
+    <h2 id="gateTitle"></h2>
+    <p id="gateText"></p>
+    <input id="pin" type="tel" inputmode="numeric" aria-label="kode rahasia" placeholder="••••">
+    <div class="msg" id="gateMsg" role="alert"></div>
+    <button type="submit">masuk</button>
+  </form>
+</div>
+
+<main class="app" id="app">
+  <header class="head">
+    <div>
+      <small id="hSmall"></small>
+      <h1 id="hTitle"></h1>
+    </div>
+    <button class="nav-btn" id="goLetter" type="button" aria-label="buka surat kecil">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+    </button>
+  </header>
+
+  <section class="list" id="list" aria-label="kapsul suara"></section>
+
+  <h2 class="sect" id="whenLabel"></h2>
+  <div class="chips" id="chips"></div>
+  <div class="panel" id="panel"><div id="panelInner"></div></div>
+
+  <p class="foot" id="foot"></p>
+</main>
+
+<section class="app" id="letterView" hidden>
+  <header class="lhead">
+    <button class="nav-btn" id="backBtn" type="button" aria-label="kembali">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+    </button>
+  </header>
+  <article class="letter" id="letter"></article>
+</section>
+
+<script>
+/* =========================================================
+   EDIT BAGIAN INI SAJA
+   (semua tulisan otomatis tampil huruf kecil)
+   ========================================================= */
+const CONFIG = {
+  pin: "1427",                       // kosongkan ("") kalau tidak mau pakai PIN
+  gateTitle: "pake headset dulu yank",
+  gateText: "ini cuma buat kamu, masukin kode rahasianya",
+  headSmall: "radio khusus buat farel bauk kambing huek",
+  headTitle: "voicebox",
+  whenLabel: "buka kapanpun kamu butuh",
+  footer: "kalo hujat tak blok",
+
+  /* Halaman surat (panah di pojok kanan atas).
+     Tiap baris di paragraphs = satu paragraf. Boleh sedikit, boleh banyak. */
+  letter: {
+    title: "gausa dibaca",
+    paragraphs: [
+      "hi cayanggg.",
+      "aku bloon ngomong yang manis-manis, jadi aku bikin tempat konyol ini biar suaraku bisa nemenin kamu, di jam berapa pun (selagi ada internet) hohohoho.",
+      "kamu udah jadi bagian penting dari hari-hari aku.",
+      "aku bikin ini karena ngerasa bakalan sibuk, kurang waktu ngobrol bareng kamu dan bikin kamu agak kesepian nantinya.",
+      "makasih udah dengerin sampai sini."
+    ],
+    sign: "dari aku, naya elsa frozen real ><"
+  }
+};
+
+/* Kapsul utama. src = lokasi file audio. note = teks bonus (boleh dikosongkan). */
+const CAPSULES = [
+  { mood:"pas pagi",        title:"selamat pagi dari aku",  src:"audio/pagi.mp3",     note:"" },
+  { mood:"pas mau berangkat",   title:"sebelum berangkat kerja",   src:"audio/berangkat.mp3",   note:"" },
+  { mood:"pas kamu istirahat",  title:"buat istirahat kerja",      src:"audio/istirahat.mp3",   note:"" },
+  { mood:"pas kamu kesepian", title:"basa basi",      src:"audio/sepi.mp3",     note:"" },
+  { mood:"pas mau tidur", title:"selamat malam dari aku",          src:"audio/tidur.mp3",    note:"" },
+  { mood:"pas kamu bloon", title:"dongeng sebelum tidur", src:"audio/dongeng.mp3", note:"" }
+];
+
+/* Bagian "buka kalau..." */
+const OPEN_WHEN = [
+  { label:"buka kalau lagi sedih",        src:"audio/tawa.mp3",   note:"" },
+  { label:"buka kalau kangen",           src:"audio/kiss.mp3", note:"" },
+  { label:"buka kalau susah tidur",      src:"audio/nyanyi.mp3",  note:"" },
+  { label:"buka kalau kesel",   src:"audio/love.mp3",   note:"" }
+];
+/* =========================================================
+   SELESAI. Di bawah ini tidak perlu diubah.
+   ========================================================= */
+
+const $ = id => document.getElementById(id);
+const BARS = 44;
+const ICON_ENV = '<svg class="ico-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 8 9 6 9-6"/></svg>';
+const ICON_HEART = '<svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4a5 5 0 0 1 7.5-6.6 5 5 0 0 1 7.5 6.6z"/></svg>';
+const ICON_PLAY = '<svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>';
+
+const sess = {
+  get(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ sessionStorage.setItem(k,v); }catch(e){} }
+};
+function el(tag, cls, text){
+  const n = document.createElement(tag);
+  if(cls) n.className = cls;
+  if(text != null) n.textContent = text;
+  return n;
+}
+function fmt(s){
+  if(!isFinite(s) || s < 0) s = 0;
+  const m = Math.floor(s/60), r = Math.floor(s%60);
+  return m + ":" + (r < 10 ? "0" : "") + r;
+}
+function pauseAll(except){
+  document.querySelectorAll("audio").forEach(a => { if(a !== except) a.pause(); });
+}
+
+function buildPlayer(item){
+  const wrap = el("div", "player");
+  const audio = new Audio();
+  audio.preload = "metadata";
+  audio.src = item.src;
+
+  const wave = el("div", "wave");
+  wave.setAttribute("role", "slider");
+  wave.setAttribute("tabindex", "0");
+  wave.setAttribute("aria-label", "posisi audio");
+  const bars = [];
+  for(let i = 0; i < BARS; i++){
+    const b = document.createElement("i");
+    const h = 22 + Math.abs(Math.sin(i * 1.7) * 48) + Math.abs(Math.sin(i * 0.53 + 1) * 28);
+    b.style.height = Math.min(100, h) + "%";
+    wave.appendChild(b);
+    bars.push(b);
+  }
+
+  const ctrl = el("div", "ctrl");
+  const btn = el("button", "play");
+  btn.type = "button";
+  btn.setAttribute("aria-label", "putar atau jeda");
+  btn.innerHTML = ICON_PLAY;
+  const time = el("span", "time", "0:00 / 0:00");
+  ctrl.append(btn, time);
+
+  wrap.append(wave, ctrl);
+  if(item.note){ wrap.appendChild(el("p", "note", item.note)); }
+  const err = el("p", "err");
+  err.hidden = true;
+  wrap.appendChild(err);
+
+  function paint(){
+    const d = audio.duration, c = audio.currentTime;
+    const ratio = d ? c / d : 0;
+    const on = Math.round(ratio * BARS);
+    bars.forEach((b, i) => b.classList.toggle("on", i < on));
+    time.textContent = fmt(c) + " / " + fmt(d);
+  }
+  audio.addEventListener("loadedmetadata", paint);
+  audio.addEventListener("timeupdate", paint);
+  audio.addEventListener("play", () => btn.classList.add("playing"));
+  audio.addEventListener("pause", () => btn.classList.remove("playing"));
+  audio.addEventListener("ended", () => {
+    btn.classList.remove("playing");
+    audio.currentTime = 0;
+    paint();
+  });
+  audio.addEventListener("error", () => {
+    err.hidden = false;
+    err.textContent = "audionya belum ketemu. cek nama file: " + item.src;
+  });
+
+  btn.addEventListener("click", () => {
+    if(audio.paused){
+      pauseAll(audio);
+      err.hidden = true;
+      audio.play().catch(() => {
+        err.hidden = false;
+        err.textContent = "audionya belum bisa diputar. cek nama file: " + item.src;
+      });
+    } else {
+      audio.pause();
+    }
+  });
+
+  function seekFrom(e){
+    if(!audio.duration) return;
+    const r = wave.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    audio.currentTime = ratio * audio.duration;
+    paint();
+  }
+  let dragging = false;
+  wave.addEventListener("pointerdown", e => { dragging = true; wave.setPointerCapture(e.pointerId); seekFrom(e); });
+  wave.addEventListener("pointermove", e => { if(dragging) seekFrom(e); });
+  wave.addEventListener("pointerup", () => { dragging = false; });
+  wave.addEventListener("pointercancel", () => { dragging = false; });
+  wave.addEventListener("keydown", e => {
+    if(!audio.duration) return;
+    if(e.key === "ArrowRight") audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+    if(e.key === "ArrowLeft") audio.currentTime = Math.max(0, audio.currentTime - 5);
+  });
+
+  return { el: wrap, audio };
+}
+
+/* ----- kartu kapsul utama ----- */
+const list = $("list");
+let openCard = null;
+function closeCard(card){
+  card.classList.remove("open");
+  card.querySelector(".card-head").setAttribute("aria-expanded", "false");
+  if(card._audio) card._audio.pause();
+}
+CAPSULES.forEach(item => {
+  const card = el("div", "card");
+  const head = el("button", "card-head");
+  head.type = "button";
+  head.setAttribute("aria-expanded", "false");
+
+  const badge = el("span", "badge");
+  badge.innerHTML = ICON_ENV + ICON_HEART;
+  const meta = el("span", "meta");
+  meta.append(el("span", "mood", item.mood), el("span", "title", item.title));
+  const hint = el("span", "hint", "ketuk buat buka");
+  head.append(badge, meta, hint);
+
+  const body = el("div", "body");
+  const bodyIn = document.createElement("div");
+  body.appendChild(bodyIn);
+  card.append(head, body);
+  list.appendChild(card);
+
+  let built = false;
+  head.addEventListener("click", () => {
+    if(card.classList.contains("open")){ closeCard(card); openCard = null; return; }
+    if(openCard) closeCard(openCard);
+    if(!built){
+      const p = buildPlayer(item);
+      bodyIn.appendChild(p.el);
+      card._audio = p.audio;
+      built = true;
+    }
+    card.classList.add("open");
+    head.setAttribute("aria-expanded", "true");
+    openCard = card;
+  });
+});
+
+/* ----- "buka kalau..." ----- */
+const chips = $("chips"), panel = $("panel"), panelInner = $("panelInner");
+let activeChip = null, activeAudio = null;
+OPEN_WHEN.forEach(item => {
+  const c = el("button", "chip", item.label);
+  c.type = "button";
+  c.addEventListener("click", () => {
+    if(activeAudio) activeAudio.pause();
+    if(activeChip === c){
+      c.classList.remove("active");
+      panel.classList.remove("open");
+      activeChip = null; activeAudio = null;
+      return;
+    }
+    if(activeChip) activeChip.classList.remove("active");
+    c.classList.add("active");
+    panelInner.innerHTML = "";
+    const p = buildPlayer(item);
+    panelInner.appendChild(p.el);
+    activeAudio = p.audio;
+    activeChip = c;
+    panel.classList.add("open");
+    panel.scrollIntoView({ behavior:"smooth", block:"nearest" });
+  });
+  chips.appendChild(c);
+});
+if(!OPEN_WHEN.length){ $("whenLabel").hidden = true; chips.hidden = true; }
+
+/* ----- teks halaman ----- */
+$("hSmall").textContent = CONFIG.headSmall;
+$("hTitle").textContent = CONFIG.headTitle;
+$("whenLabel").textContent = CONFIG.whenLabel;
+$("foot").textContent = CONFIG.footer;
+document.title = CONFIG.headTitle;
+
+/* ----- halaman surat + navigasi ----- */
+(function letterPage(){
+  const L = CONFIG.letter || {};
+  const box = $("letter");
+  if(L.title) box.appendChild(el("h2", "", L.title));
+  const paras = L.paragraphs || [];
+  paras.forEach((t, i) => {
+    const p = el("p", "", t);
+    p.style.animationDelay = (0.15 + i * 0.35) + "s";
+    box.appendChild(p);
+  });
+  if(L.sign){
+    const sg = el("p", "sign", L.sign);
+    sg.style.animationDelay = (0.15 + paras.length * 0.35) + "s";
+    box.appendChild(sg);
+  }
+  let viaApp = false;
+  function show(){
+    const inLetter = location.hash === "#surat";
+    $("app").hidden = inLetter;
+    $("letterView").hidden = !inLetter;
+    if(inLetter){
+      pauseAll();
+      box.querySelectorAll("p").forEach(p => { p.style.animation = "none"; void p.offsetWidth; p.style.animation = ""; });
+    }
+    window.scrollTo(0, 0);
+  }
+  $("goLetter").addEventListener("click", () => { viaApp = true; location.hash = "#surat"; });
+  $("backBtn").addEventListener("click", () => {
+    if(viaApp){ viaApp = false; history.back(); } else { location.hash = ""; }
+  });
+  window.addEventListener("hashchange", show);
+  show();
+})();
+
+/* ----- PIN ----- */
+(function gate(){
+  const g = $("gate");
+  if(!CONFIG.pin || sess.get("kotak-ok") === "1") return;
+  g.hidden = false;
+  $("gateTitle").textContent = CONFIG.gateTitle;
+  $("gateText").textContent = CONFIG.gateText;
+  const input = $("pin"), msg = $("gateMsg"), form = $("gateForm");
+  input.maxLength = CONFIG.pin.length;
+  setTimeout(() => input.focus(), 100);
+  function check(){
+    if(input.value === CONFIG.pin){
+      sess.set("kotak-ok", "1");
+      g.hidden = true;
+    } else {
+      msg.textContent = "kayaknya bukan itu deh, coba inget lagi";
+      form.classList.remove("shake"); void form.offsetWidth; form.classList.add("shake");
+      input.value = "";
+    }
+  }
+  form.addEventListener("submit", e => { e.preventDefault(); check(); });
+  input.addEventListener("input", () => { msg.textContent = ""; if(input.value.length === CONFIG.pin.length) check(); });
+})();
+</script>
+</body>
+</html>
